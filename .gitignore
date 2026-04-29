@@ -1,0 +1,44 @@
+# Terraform
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+crash.log
+crash.*.log
+
+# Terraform lock file (native S3 locking)
+.terraform.tfstate.lock.info
+
+# Variables files (may contain secrets)
+*.tfvars
+*.tfvars.json
+
+# AWS
+.aws/
+
+# Environment variables
+.env
+.env.*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Helm
+*.tgz
+
+# Kubernetes secrets (never commit these)
+*secret*.yaml
+*secret*.yml
