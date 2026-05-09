@@ -3,11 +3,12 @@ version: "3.8"
 services:
   uptime-kuma:
     container_name: uptime-kuma-dev
-    image: louislam/uptime-kuma:nightly2
+    image: louislam/uptime-kuma:1 ## v1 uses SQLite, not embedded MariaDB, avoids Unix socket issues on WSL2/Docker Desktop
     volumes:
-      #- ./data:/app/data
-      - ../server:/app/server
-      - ../db:/app/db
+      - uptime-kuma-data:/app/data ## named volume keeps data inside Docker's filesystem, not Windows, required for SQLite to work
+    restart: unless-stopped
     ports:
-      - "3001:3001" # <Host Port>:<Container Port>
-      - "3307:3306"
+      - "3001:3001"
+
+volumes:
+  uptime-kuma-data: ## named volume managed by Docker, not a bind mount, avoids overwriting the container's node_modules
