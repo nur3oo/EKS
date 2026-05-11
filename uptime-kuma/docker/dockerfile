@@ -1,21 +1,18 @@
-# Base image can be overridden at build time, defaults to base2
-ARG BASE_IMAGE=louislam/uptime-kuma:base2
+# Base image can be overridden at build time, defaults to base3
+ARG BASE_IMAGE=louislam/uptime-kuma:base3
 
 # Stage 1 - Pull the pre-compiled Go healthcheck binary from this image
-
-FROM louislam/uptime-kuma:builder-go AS build_healthcheck
+FROM louislam/uptime-kuma:builder-go3 AS build_healthcheck
 
 # Stage 2 - Build the app
-FROM louislam/uptime-kuma:base2 AS build
+FROM louislam/uptime-kuma:base3 AS build
 USER node
 WORKDIR /app
 
 # Skip Chromium download, not needed at runtime
-
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
 
 # Copy package files first before the rest of the code
-
 COPY --chown=node:node uptime-kuma/.npmrc .npmrc
 COPY --chown=node:node uptime-kuma/package.json package.json
 COPY --chown=node:node uptime-kuma/package-lock.json package-lock.json
@@ -28,21 +25,21 @@ COPY --chown=node:node uptime-kuma/ .
 COPY --chown=node:node --from=build_healthcheck /app/extra/healthcheck /app/extra/healthcheck
 
 # Create the data directory where Uptime Kuma stores its database and config
-RUN mkdir ./data
+RUN mkdir -p ./data
 
-# Stage 3 Final image, this is what actually gets deployed
+# Stage 3 - Final image, this is what actually gets deployed
 FROM $BASE_IMAGE AS release
 WORKDIR /app
 
 LABEL org.opencontainers.image.source="https://github.com/louislam/uptime-kuma"
 
-# Uptime Kuma it is running inside a container
+# Uptime Kuma is running inside a container
 ENV UPTIME_KUMA_IS_CONTAINER=1
 
 # Copy only the finished built app from Stage 2 into this final image
 COPY --chown=node:node --from=build /app /app
 
-# Uptime Kuma runs on port 3001, 
+# Uptime Kuma runs on port 3001
 EXPOSE 3001
 
 # Runs every 60s, gives the app 180s to boot before checking, retries 5 times
