@@ -1,0 +1,100 @@
+# kube-prometheus-stack base values
+# Shared across ALL environments. Override per-env in dev.yaml / prod.yaml.
+# Docs: https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
+
+# ── Prometheus Operator ──────────────────────────────────────────────────────
+prometheusOperator:
+  enabled: true
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+# ── Prometheus ───────────────────────────────────────────────────────────────
+prometheus:
+  prometheusSpec:
+    scrapeInterval: "30s"
+    evaluationInterval: "30s"
+    # Pick up ALL ServiceMonitors / PodMonitors in the cluster, not just Helm-managed ones
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    # Defaults — overridden per env
+    retention: 15d
+    replicas: 1
+    resources:
+      requests:
+        cpu: 200m
+        memory: 400Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+
+# ── Alertmanager ─────────────────────────────────────────────────────────────
+alertmanager:
+  enabled: true
+  alertmanagerSpec:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+
+# ── Grafana ───────────────────────────────────────────────────────────────────
+grafana:
+  enabled: true
+  # Override adminPassword via a Kubernetes Secret — do NOT hardcode here.
+  # Create the secret before deploying: kubectl create secret generic grafana-admin
+  #   --from-literal=admin-password=<password> -n monitoring-<env>
+  adminPassword: ""
+  defaultDashboardsEnabled: true
+  defaultDashboardsTimezone: UTC
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  grafana.ini:
+    analytics:
+      check_for_updates: false
+      reporting_enabled: false
+    auth.anonymous:
+      enabled: false
+    server:
+      # Override root_url per environment
+      root_url: ""
+
+# ── Node Exporter ─────────────────────────────────────────────────────────────
+nodeExporter:
+  enabled: true
+
+# ── Kube State Metrics ────────────────────────────────────────────────────────
+kubeStateMetrics:
+  enabled: true
+
+# ── Default scrape targets ────────────────────────────────────────────────────
+kubeApiServer:
+  enabled: true
+
+kubeControllerManager:
+  enabled: true
+
+kubeScheduler:
+  enabled: true
+
+kubelet:
+  enabled: true
+
+kubeEtcd:
+  enabled: true
+
+coreDns:
+  enabled: true

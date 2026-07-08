@@ -1,0 +1,59 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: monitoring
+  namespace: argocd
+spec:
+  # List generator: one Application per environment.
+  # Add a new element here to introduce a third environment.
+  generators:
+    - list:
+        elements:
+          - env: dev
+          - env: prod
+
+  template:
+    metadata:
+      name: "monitoring-{{env}}"
+      labels:
+        app.kubernetes.io/name: monitoring
+        app.kubernetes.io/part-of: kube-prometheus-stack
+        env: "{{env}}"
+      # Prevent ArgoCD from deleting the ApplicationSet's own Applications on removal
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: default
+
+      # Multi-source: Helm chart from the community repo + values from this git repo.
+      # Requires ArgoCD >= 2.6 with multi-source Applications enabled.
+      sources:
+        # Source 1 — the upstream Helm chart (no code here, just the packaged chart)
+        - repoURL: https://prometheus-community.github.io/helm-charts
+          chart: kube-prometheus-stack
+          # Pin the chart version for reproducible deploys.
+          # Check latest: helm repo update && helm search repo prometheus-community/kube-prometheus-stack
+          targetRevision: "72.3.0"
+          helm:
+            releaseName: "monitoring"
+            valueFiles:
+              # $values resolves to Source 2 below (the git repo reference)
+              - $values/kubernetes/monitoring/values/base.yaml
+              - $values/kubernetes/monitoring/values/{{env}}.yaml
+
+        # Source 2 — this git repo, used only as a values file source via $values
+        - repoURL: https://github.com/nur3oo/EKS.git
+          targetRevision: HEAD
+          ref: values
+
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "monitoring-{{env}}"
+
+      syncPolicy:
+        automated:
+          prune: true      # remove resources deleted from git
+          selfHeal: true   # revert manual cluster changes
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true   # required for kube-prometheus-stack CRDs

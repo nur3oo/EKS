@@ -80,6 +80,28 @@ resource "aws_route_table_association" "private" {
   route_table_id = aws_route_table.private.id
 }
 
+resource "aws_security_group" "endpoint" {
+  name        = "eks-endpoint-sg"
+  description = "VPC interface endpoints"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = [aws_vpc.main.cidr_block]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = { Name = "eks-endpoint-sg" }
+}
+
 # Gateway endpoint, free, no security group needed
 resource "aws_vpc_endpoint" "s3" {
   vpc_id            = aws_vpc.main.id
@@ -97,7 +119,7 @@ resource "aws_vpc_endpoint" "ecr_api" {
   service_name        = "com.amazonaws.${var.region}.ecr.api"
   vpc_endpoint_type   = "Interface"
   subnet_ids          = aws_subnet.private[*].id
-  security_group_ids  = [var.endpoint_sg]
+  security_group_ids  = [aws_security_group.endpoint.id]
   private_dns_enabled = true
 
   tags = {
@@ -110,7 +132,7 @@ resource "aws_vpc_endpoint" "ecr_dkr" {
   service_name        = "com.amazonaws.${var.region}.ecr.dkr"
   vpc_endpoint_type   = "Interface"
   subnet_ids          = aws_subnet.private[*].id
-  security_group_ids  = [var.endpoint_sg]
+  security_group_ids  = [aws_security_group.endpoint.id]
   private_dns_enabled = true
 
   tags = {
@@ -123,7 +145,7 @@ resource "aws_vpc_endpoint" "eks" {
   service_name        = "com.amazonaws.${var.region}.eks"
   vpc_endpoint_type   = "Interface"
   subnet_ids          = aws_subnet.private[*].id
-  security_group_ids  = [var.endpoint_sg]
+  security_group_ids  = [aws_security_group.endpoint.id]
   private_dns_enabled = true
 
   tags = {
@@ -136,7 +158,7 @@ resource "aws_vpc_endpoint" "ec2" {
   service_name        = "com.amazonaws.${var.region}.ec2"
   vpc_endpoint_type   = "Interface"
   subnet_ids          = aws_subnet.private[*].id
-  security_group_ids  = [var.endpoint_sg]
+  security_group_ids  = [aws_security_group.endpoint.id]
   private_dns_enabled = true
 
   tags = {
@@ -149,7 +171,7 @@ resource "aws_vpc_endpoint" "sts" {
   service_name        = "com.amazonaws.${var.region}.sts"
   vpc_endpoint_type   = "Interface"
   subnet_ids          = aws_subnet.private[*].id
-  security_group_ids  = [var.endpoint_sg]
+  security_group_ids  = [aws_security_group.endpoint.id]
   private_dns_enabled = true
 
   tags = {
@@ -162,7 +184,7 @@ resource "aws_vpc_endpoint" "cloudwatch_logs" {
   service_name        = "com.amazonaws.${var.region}.logs"
   vpc_endpoint_type   = "Interface"
   subnet_ids          = aws_subnet.private[*].id
-  security_group_ids  = [var.endpoint_sg]
+  security_group_ids  = [aws_security_group.endpoint.id]
   private_dns_enabled = true
 
   tags = {
@@ -175,7 +197,7 @@ resource "aws_vpc_endpoint" "secretsmanager" {
   service_name        = "com.amazonaws.${var.region}.secretsmanager"
   vpc_endpoint_type   = "Interface"
   subnet_ids          = aws_subnet.private[*].id
-  security_group_ids  = [var.endpoint_sg]
+  security_group_ids  = [aws_security_group.endpoint.id]
   private_dns_enabled = true
 
   tags = {
