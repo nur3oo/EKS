@@ -3,7 +3,7 @@ resource "aws_lb" "alb" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.lb_sg.id]
-  subnets            = [for subnet in aws_subnet.public : subnet.id]
+  subnets            = [aws_subnet.public[*].id]
 
   enable_deletion_protection = false
   
@@ -15,6 +15,7 @@ resource "aws_lb_target_group" "alb-tg" {
   protocol = "HTTP"
   vpc_id   = var.vpc_id
   target_type = "ip"
+  
 
   health_check {
     protocol            = "HTTP"
@@ -38,7 +39,7 @@ resource "aws_lb_listener" "https" {
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.tg.arn
+    target_group_arn = aws_lb_target_group.alb-tg.arn
   }
 }
 

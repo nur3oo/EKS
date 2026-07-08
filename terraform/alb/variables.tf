@@ -20,3 +20,8 @@ variable "matcher" {
     default = "200-399"
   
 }
+
+variable "public_subnet_ids" {
+    type = string
+  
+}
