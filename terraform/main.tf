@@ -1,3 +1,8 @@
+locals {
+  lb_controller_namespace            = "kube-system"
+  lb_controller_service_account_name = "aws-load-balancer-controller"
+}
+
 module "sg" {
   source   = "./sg"
   vpc_id   = module.vpc.vpc_id
@@ -15,4 +20,25 @@ module "eks" {
   private_subnet_ids = module.vpc.private_subnet_ids
   public_subnet_ids  = module.vpc.public_subnet_ids
   eks_cluster_sg_id  = module.sg.eks_cluster_sg_id
+}
+
+module "iam" {
+  source = "./iam"
+
+  oidc_issuer_url      = module.eks.cluster_oidc_issuer_url
+  namespace            = local.lb_controller_namespace
+  service_account_name = local.lb_controller_service_account_name
+}
+
+module "lb_controller" {
+  source = "./lb-controller"
+
+  cluster_name         = module.eks.cluster_name
+  region               = var.region
+  vpc_id               = module.vpc.vpc_id
+  namespace            = local.lb_controller_namespace
+  service_account_name = local.lb_controller_service_account_name
+  role_arn             = module.iam.lb_controller_role_arn
+
+  depends_on = [module.eks]
 }

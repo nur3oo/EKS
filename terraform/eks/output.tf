@@ -13,3 +13,7 @@ output "cluster_ca_certificate" {
 output "node_group_role_arn" {
   value = aws_iam_role.eks_nodes.arn
 }
+
+output "cluster_oidc_issuer_url" {
+  value = aws_eks_cluster.main.identity[0].oidc[0].issuer
+}
