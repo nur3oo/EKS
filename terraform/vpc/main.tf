@@ -192,6 +192,20 @@ resource "aws_vpc_endpoint" "cloudwatch_logs" {
   }
 }
 
+resource "aws_vpc_endpoint" "elasticloadbalancing" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.${var.region}.elasticloadbalancing"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = aws_subnet.private[*].id
+  security_group_ids  = [aws_security_group.endpoint.id]
+  private_dns_enabled = true
+
+  tags = {
+    Name = "eks-elb-endpoint"
+  }
+}
+
+
 resource "aws_vpc_endpoint" "secretsmanager" {
   vpc_id              = aws_vpc.main.id
   service_name        = "com.amazonaws.${var.region}.secretsmanager"
