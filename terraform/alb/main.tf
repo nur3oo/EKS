@@ -2,8 +2,8 @@ resource "aws_lb" "alb" {
     name               = "eks-alb"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.lb_sg.id]
-  subnets            = [aws_subnet.public[*].id]
+  security_groups    = [var.alb_sg_id]
+  subnets            = [var.public_subnet_ids[*].id]
 
   enable_deletion_protection = false
   
