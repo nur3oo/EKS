@@ -39,30 +39,6 @@ resource "aws_security_group" "eks_nodes" {
     security_groups = [aws_security_group.eks_cluster.id]
   }
 
-  ingress {
-    from_port       = 3001
-    to_port         = 3001
-    protocol        = "tcp"
-    security_groups = [aws_security_group.alb.id]
-    description     = "Uptime Kuma"
-  }
-
-  ingress {
-    from_port       = 3000
-    to_port         = 3000
-    protocol        = "tcp"
-    security_groups = [aws_security_group.alb.id]
-    description     = "Grafana"
-  }
-
-  ingress {
-    from_port       = 9090
-    to_port         = 9090
-    protocol        = "tcp"
-    security_groups = [aws_security_group.alb.id]
-    description     = "Prometheus"
-  }
-
   egress {
     from_port   = 0
     to_port     = 0
@@ -92,12 +68,37 @@ resource "aws_security_group" "alb" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
   tags = { Name = "eks-alb-sg" }
+}
+
+locals {
+  alb_node_ports = {
+    uptime_kuma = 3001
+    grafana     = 3000
+    prometheus  = 9090
+  }
+}
+
+resource "aws_security_group_rule" "alb_to_nodes" {
+  for_each = local.alb_node_ports
+
+  type                     = "egress"
+  from_port                = each.value
+  to_port                  = each.value
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.alb.id
+  source_security_group_id = aws_security_group.eks_nodes.id
+  description              = each.key
+}
+
+resource "aws_security_group_rule" "nodes_from_alb" {
+  for_each = local.alb_node_ports
+
+  type                     = "ingress"
+  from_port                = each.value
+  to_port                  = each.value
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.eks_nodes.id
+  source_security_group_id = aws_security_group.alb.id
+  description              = each.key
 }

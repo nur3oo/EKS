@@ -1,4 +1,4 @@
-output "alb_arn" {
-    value = aws_lb.alb.arn
-  
+output "cert_arn" {
+  value = aws_acm_certificate_validation.cert.certificate_arn
+
 }
