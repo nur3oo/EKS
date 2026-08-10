@@ -42,3 +42,14 @@ module "lb_controller" {
 
   depends_on = [module.eks]
 }
+
+module "alb" {
+  source = "./alb"
+
+  vpc_id            = module.vpc.vpc_id
+  public_subnet_ids = module.vpc.public_subnet_ids
+  alb_sg_id         = module.sg.alb_sg_id
+  domain_name       = var.domain_name
+
+  depends_on = [module.vpc, module.sg]
+}

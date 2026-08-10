@@ -3,3 +3,9 @@ variable "region" {
   type        = string
   default     = "eu-west-2"
 }
+
+variable "domain_name" {
+  description = "Root domain (registered in Route53) used for the ALB's ACM certificate"
+  type        = string
+  default     = "nurtrade.net"
+}
