@@ -42,3 +42,6 @@ Thumbs.db
 # Kubernetes secrets (never commit these)
 *secret*.yaml
 *secret*.yml
+
+# Generated from kubernetes/ingress/uptime-kuma-ingress.yaml.tmpl by scripts/render-ingress.sh
+kubernetes/ingress/uptime-kuma-ingress.yaml

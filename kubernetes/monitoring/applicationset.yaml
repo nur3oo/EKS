@@ -19,7 +19,7 @@ spec:
         app.kubernetes.io/name: monitoring
         app.kubernetes.io/part-of: kube-prometheus-stack
         env: "{{env}}"
-      # Prevent ArgoCD from deleting the ApplicationSet's own Applications on removal
+      # Prevent ArgoCD from deleting the ApplicationSet's own app on removal
       finalizers:
         - resources-finalizer.argocd.argoproj.io
     spec:
@@ -41,7 +41,7 @@ spec:
               - $values/kubernetes/monitoring/values/base.yaml
               - $values/kubernetes/monitoring/values/{{env}}.yaml
 
-        # Source 2 — this git repo, used only as a values file source via $values
+        # Source 2this git repo, used only as a values file source via $values
         - repoURL: https://github.com/nur3oo/EKS.git
           targetRevision: HEAD
           ref: values
