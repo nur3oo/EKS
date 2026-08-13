@@ -13,5 +13,6 @@ variable "domain_name" {
 variable "repository_url" {
   description = "The repo url"
   type = string
+  default = "nur/ecs"
   
 }
