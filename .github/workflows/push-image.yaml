@@ -1,0 +1,7 @@
+name : Push Image to ECR
+
+  on:
+      push:
+          branches: [main]
+          paths:
+          - 'app/'
