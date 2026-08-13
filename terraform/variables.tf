@@ -9,3 +9,9 @@ variable "domain_name" {
   type        = string
   default     = "nurtrade.net"
 }
+
+variable "repository_url" {
+  description = "The repo url"
+  type = string
+  
+}

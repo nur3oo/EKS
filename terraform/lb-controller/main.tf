@@ -8,7 +8,7 @@ resource "helm_release" "aws_load_balancer_controller" {
 
   set {
     name  = "image.repository"
-    value = data.aws_ecr_repository.app.repository_url
+    value = var.repository_url
   }
 
   set {

@@ -39,6 +39,8 @@ module "lb_controller" {
   namespace            = local.lb_controller_namespace
   service_account_name = local.lb_controller_service_account_name
   role_arn             = module.iam.lb_controller_role_arn
+  repository_url       = module.ecr.repository_url
+
 
   depends_on = [module.eks]
 }
