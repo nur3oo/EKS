@@ -50,3 +50,8 @@ module "alb" {
 
   domain_name = var.domain_name
 }
+
+module "ecr" {
+  source = "./ecr"
+  
+}
