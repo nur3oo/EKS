@@ -38,7 +38,7 @@ done
 
 echo "Installing ArgoCD into namespace '${ARGOCD_NAMESPACE}'..."
 kubectl create namespace "${ARGOCD_NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
-kubectl apply -n "${ARGOCD_NAMESPACE}" -f "${ARGOCD_MANIFEST}"
+kubectl apply -n "${ARGOCD_NAMESPACE}" -f "${ARGOCD_MANIFEST}" --server-side --force-conflicts
 
 echo "Waiting for argocd-server to roll out..."
 kubectl rollout status deployment/argocd-server -n "${ARGOCD_NAMESPACE}" --timeout=300s

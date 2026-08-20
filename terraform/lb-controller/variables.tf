@@ -36,7 +36,3 @@ variable "chart_version" {
   default     = "3.4.1"
 }
 
-variable "repository_url" {
-  type = string
-  
-}

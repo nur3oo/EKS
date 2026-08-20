@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd
+  namespace: argocd
+  # Prevent ArgoCD from deleting its own app (and itself) on removal from git.
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  source:
+    repoURL: https://argoproj.github.io/argo-helm
+    chart: argo-cd
+    # Keep in lockstep with terraform/argocd/variables.tf's chart_version -
+    # this Application takes over management of the same Helm release the
+    # Terraform bootstrap created, so the versions must match on handoff.
+    targetRevision: "10.3.3"
+    helm:
+      releaseName: argocd
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+
+  syncPolicy:
+    automated:
+      prune: true      # remove resources deleted from git
+      selfHeal: true   # revert manual cluster changes
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

@@ -6,16 +6,6 @@ resource "helm_release" "aws_load_balancer_controller" {
   namespace  = var.namespace
   timeout    = 600
 
-  set {
-    name  = "image.repository"
-    value = var.repository_url
-  }
-
-  set {
-    name  = "image.tag"
-    value = "eks"
-  }
-
   values = [
     yamlencode({
       clusterName = var.cluster_name
