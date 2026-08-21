@@ -66,8 +66,8 @@ resource "aws_security_group" "eks_nodes" {
   tags = { Name = "eks-nodes-sg" }
 }
 
-# Control plane -> node webhook/exec/logs calls (kubelet, admission webhooks).
-# Reciprocal to the nodes' 1025-65535 ingress rule above; scoped to the nodes
+# Control plane 2 node webhook/exec/logs calls kubelet,admission.
+#  to the nodes 1025-65535 ingress rule above scoped to the nodes
 # SG only, not to the internet.
 resource "aws_security_group_rule" "cluster_to_nodes_webhooks" {
   type                     = "egress"
@@ -79,56 +79,3 @@ resource "aws_security_group_rule" "cluster_to_nodes_webhooks" {
   description              = "control plane to node webhook/exec/logs"
 }
 
-resource "aws_security_group" "alb" {
-  name        = "eks-alb-sg"
-  description = "Internet-facing ALB"
-  vpc_id      = var.vpc_id
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = { Name = "eks-alb-sg" }
-}
-
-locals {
-  alb_node_ports = {
-    uptime_kuma = 3001
-    grafana     = 3000
-    prometheus  = 9090
-  }
-}
-
-resource "aws_security_group_rule" "alb_to_nodes" {
-  for_each = local.alb_node_ports
-
-  type                     = "egress"
-  from_port                = each.value
-  to_port                  = each.value
-  protocol                 = "tcp"
-  security_group_id        = aws_security_group.alb.id
-  source_security_group_id = aws_security_group.eks_nodes.id
-  description              = each.key
-}
-
-resource "aws_security_group_rule" "nodes_from_alb" {
-  for_each = local.alb_node_ports
-
-  type                     = "ingress"
-  from_port                = each.value
-  to_port                  = each.value
-  protocol                 = "tcp"
-  security_group_id        = aws_security_group.eks_nodes.id
-  source_security_group_id = aws_security_group.alb.id
-  description              = each.key
-}

@@ -1,0 +1,44 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: aws-load-balancer-controller
+  namespace: argocd
+  # Prevent ArgoCD from deleting the controller (and the ALB it manages) on removal from git.
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  source:
+    repoURL: https://aws.github.io/eks-charts
+    chart: aws-load-balancer-controller
+    # Keep in lockstep with terraform/lb-controller/variables.tf's chart_version -
+    # this Application takes over management of the same Helm release the
+    # Terraform bootstrap created, so the versions must match on handoff.
+    targetRevision: "3.4.1"
+    helm:
+      releaseName: aws-load-balancer-controller
+      values: |
+        clusterName: eks-cluster
+        region: eu-west-2
+        # vpcId intentionally omitted - the controller auto-discovers it from
+        # EC2 instance metadata on the node it's running on.
+        serviceAccount:
+          create: true
+          name: aws-load-balancer-controller
+          annotations:
+            # Fixed IAM role name (terraform/iam/main.tf) + this AWS account's
+            # id - both are stable across every destroy/recreate cycle, so
+            # this doesn't need to be templated from a terraform output.
+            eks.amazonaws.com/role-arn: arn:aws:iam::447924746567:role/aws-load-balancer-controller-irsa
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+
+  syncPolicy:
+    automated:
+      prune: true      # remove resources deleted from git
+      selfHeal: true   # revert manual cluster changes
+    syncOptions:
+      - ServerSideApply=true

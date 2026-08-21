@@ -30,28 +30,10 @@ module "iam" {
   service_account_name = local.lb_controller_service_account_name
 }
 
-module "lb_controller" {
-  source = "./lb-controller"
-
-  cluster_name         = module.eks.cluster_name
-  region               = var.region
-  vpc_id               = module.vpc.vpc_id
-  namespace            = local.lb_controller_namespace
-  service_account_name = local.lb_controller_service_account_name
-  role_arn             = module.iam.lb_controller_role_arn
-
-  depends_on = [module.eks]
-}
-
-module "alb" {
-  source = "./alb"
+module "certs" {
+  source = "./certs"
 
   domain_name = var.domain_name
-}
-
-module "ecr" {
-  source = "./ecr"
-
 }
 
 module "argocd" {
