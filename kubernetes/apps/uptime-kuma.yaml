@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: uptime-kuma
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  ## this is telling it the source is my git directory below and sync whatever is in that"
+
+
+  source:
+    repoURL: https://github.com/nur3oo/EKS.git
+    targetRevision: HEAD
+    path: kubernetes/uptime-kuma
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: uptime-kuma
+
+  syncPolicy:
+    automated:
+      prune: true      # remove resources deleted from git
+      selfHeal: true   # revert manual cluster changes
+    syncOptions:
+      - CreateNamespace=true

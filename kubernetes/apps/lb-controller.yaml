@@ -3,7 +3,7 @@ kind: Application
 metadata:
   name: aws-load-balancer-controller
   namespace: argocd
-  # Prevent ArgoCD from deleting the controller (and the ALB it manages) on removal from git.
+  # Prevent ArgoCD from deleting the controller and the lb it manages removal from git.
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
@@ -12,9 +12,9 @@ spec:
   source:
     repoURL: https://aws.github.io/eks-charts
     chart: aws-load-balancer-controller
-    # Keep in lockstep with terraform/lb-controller/variables.tf's chart_version -
+    
     # this Application takes over management of the same Helm release the
-    # Terraform bootstrap created, so the versions must match on handoff.
+  
     targetRevision: "3.4.1"
     helm:
       releaseName: aws-load-balancer-controller
@@ -39,6 +39,6 @@ spec:
   syncPolicy:
     automated:
       prune: true      # remove resources deleted from git
-      selfHeal: true   # revert manual cluster changes
+      selfHeal: true   # reverse the manual cluster changes
     syncOptions:
       - ServerSideApply=true

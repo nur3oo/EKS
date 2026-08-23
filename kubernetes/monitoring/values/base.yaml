@@ -1,4 +1,4 @@
-#Prometheus Operator 
+#Prometheus Operator
 prometheusOperator:
   enabled: true
   resources:
@@ -18,7 +18,7 @@ prometheus:
     serviceMonitorSelectorNilUsesHelmValues: false
     podMonitorSelectorNilUsesHelmValues: false
     ruleSelectorNilUsesHelmValues: false
-    
+
     retention: 15d
     replicas: 1
     resources:
@@ -42,10 +42,10 @@ alertmanager:
         cpu: 100m
         memory: 128Mi
 
-# Grafana 
+# Grafana
 grafana:
   enabled: true
-  
+
   adminPassword: ""
   defaultDashboardsEnabled: true
   defaultDashboardsTimezone: UTC
@@ -63,8 +63,7 @@ grafana:
     auth.anonymous:
       enabled: false
     server:
-      # Override root_url per environment
-      root_url: ""
+      root_url: "https://grafana.nurtrade.net"
 
 # Node Exporter
 nodeExporter:
@@ -74,7 +73,7 @@ nodeExporter:
 kubeStateMetrics:
   enabled: true
 
-# Default scrape targets 
+# Default scrape targets
 kubeApiServer:
   enabled: true
 

@@ -1,4 +1,3 @@
 output "cert_arn" {
-  value = aws_acm_certificate_validation.cert.certificate_arn
-
+  value = data.aws_acm_certificate.cert.arn
 }
