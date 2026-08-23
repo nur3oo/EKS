@@ -32,6 +32,10 @@ resource "aws_eks_cluster" "main" {
     security_group_ids      = [var.eks_cluster_sg_id]
   }
 
+  access_config {
+    authentication_mode = "API"
+  }
+
   depends_on = [
     aws_iam_role_policy_attachment.eks_cluster_policy
   ]

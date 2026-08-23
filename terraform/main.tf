@@ -28,6 +28,8 @@ module "iam" {
   oidc_issuer_url      = module.eks.cluster_oidc_issuer_url
   namespace            = local.lb_controller_namespace
   service_account_name = local.lb_controller_service_account_name
+  eks_cluster_arn      = module.eks.cluster_arn
+  cluster_name         = module.eks.cluster_name
 }
 
 module "certs" {

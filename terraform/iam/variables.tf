@@ -14,3 +14,19 @@ variable "service_account_name" {
   type        = string
   default     = "aws-load-balancer-controller"
 }
+
+variable "github_repo" {
+  description = "GitHub repo (org/name) allowed to assume the GitHub Actions role"
+  type        = string
+  default     = "nur3oo/EKS"
+}
+
+variable "eks_cluster_arn" {
+  description = "EKS cluster ARN, scopes the github_actions role's eks:DescribeCluster permission"
+  type        = string
+}
+
+variable "cluster_name" {
+  description = "EKS cluster name, for the github_actions access entry"
+  type        = string
+}
