@@ -20,6 +20,6 @@ spec:
   syncPolicy:
     automated:
       prune: true      # remove resources deleted from git
-      selfHeal: true   # revert manual cluster changes
+      selfHeal: true   # revert manual cluster changes in console for eg
     syncOptions:
       - CreateNamespace=true
