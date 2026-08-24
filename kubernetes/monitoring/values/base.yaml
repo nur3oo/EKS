@@ -65,6 +65,19 @@ grafana:
     server:
       root_url: "https://grafana.nurtrade.net"
 
+  ingress:
+    enabled: true
+    ingressClassName: alb
+    annotations:
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/target-type: ip
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80},{"HTTPS":443}]'
+      alb.ingress.kubernetes.io/ssl-redirect: '443'
+      alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:eu-west-2:447924746567:certificate/51de663c-4d24-4205-af1b-553a23dc51e5"
+    hosts:
+      - grafana.nurtrade.net
+    path: /
+
 # Node Exporter
 nodeExporter:
   enabled: true

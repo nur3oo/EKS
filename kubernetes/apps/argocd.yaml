@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: https://argoproj.github.io/argo-helm
     chart: argo-cd
-    # Keep in lockstep with terraform/argocd/variables.tf's chart_version -
+    
     # this Application takes over management of the same Helm release the
     # Terraform bootstrap created, so the versions must match on handoff.
     targetRevision: "10.3.3"
