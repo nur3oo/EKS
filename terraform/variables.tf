@@ -10,9 +10,3 @@ variable "domain_name" {
   default     = "nurtrade.net"
 }
 
-variable "repository_url" {
-  description = "The repo url"
-  type        = string
-  default     = "nur/ecs"
-
-}
