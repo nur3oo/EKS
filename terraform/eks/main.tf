@@ -105,9 +105,8 @@ resource "aws_eks_node_group" "main" {
   }
 }
 
-# Cluster uses pure API authentication mode (no aws-auth ConfigMap), so
-# nobody gets cluster access implicitly - not even whoever ran `terraform
-# apply`. This grants that identity admin access explicitly.
+# cluster uses apii authentication mode (no aws-auth ConfigMap), so
+# grants that identity admin access explicitly.
 data "aws_caller_identity" "current" {}
 
 resource "aws_eks_access_entry" "terraform_caller" {
