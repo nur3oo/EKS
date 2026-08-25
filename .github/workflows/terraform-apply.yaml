@@ -15,8 +15,8 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::447924746567:role/eks_roles
-          aws-region: eu-west-2
+          role-to-assume: ${{ secrets.EKS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION}}
 
       - uses: hashicorp/setup-terraform@v3
 
@@ -36,8 +36,8 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::447924746567:role/github-action
-          aws-region: eu-west-2
+          role-to-assume: ${{ secrets.GIT_ARN }}
+          aws-region: ${{ secrets.AWS_REGION}}
 
       - name: Update kubeconfig
         run: aws eks update-kubeconfig --name eks-cluster --region eu-west-2
