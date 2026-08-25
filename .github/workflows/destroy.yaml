@@ -1,0 +1,64 @@
+name: Terraform Destroy
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type yes to destroy everything"
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  gitops-teardown:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.GIT_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name eks-cluster --region eu-west-2
+
+      # delete the apps with ingresses first, and wait for them to actually
+      # go, so the lb controller (still running at this point) has a chance
+      # to delete the albs it created. terraform doesn't know those albs
+      # exist it never created them so if they're not gone before the
+      # vpc/security groups get destroyed below, they're orphaned: stuck
+      # references blocking subnet/sg deletion, or a leftover alb nobody's
+      # managing anymore.
+      - name: Delete apps with ingresses
+        run: |
+          kubectl delete application uptime-kuma monitoring -n argocd \
+            --cascade=foreground --ignore-not-found --timeout=180s
+
+      - name: Delete root app
+        run: |
+          kubectl delete application root -n argocd \
+            --cascade=foreground --ignore-not-found --timeout=180s
+
+  terraform-destroy:
+    needs: gitops-teardown
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.EKS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform init
+        working-directory: terraform
+        run: terraform init
+
+      - name: Terraform destroy
+        working-directory: terraform
+        run: terraform destroy -auto-approve
