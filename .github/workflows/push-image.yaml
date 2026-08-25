@@ -1,7 +1,41 @@
-name : Push Image to ECR
+name: Build and Push to ECR
 
-  on:
-      push:
-          branches: [main]
-          paths:
-          - 'app/'
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type BUILD to run"
+        required: true
+
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  ECR_REPO: ${{ vars.ECR_REPO }}
+
+jobs:
+  build-push:
+    if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.confirm == 'BUILD' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.EKS_ROLE_ARN }}
+          aws-region: ${{ secrerts.AWS_REGION }}
+
+      - name: Login to ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, push image
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}

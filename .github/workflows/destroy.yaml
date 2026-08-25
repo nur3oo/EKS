@@ -7,6 +7,11 @@ on:
         description: "Type yes to destroy everything"
         required: true
 
+jobs:
+  apply:
+    if: ${{ github.event.inputs.confirm == 'yes' }}
+    runs-on: ubuntu-latest
+
 permissions:
   id-token: write
   contents: read
