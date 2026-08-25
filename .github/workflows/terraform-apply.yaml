@@ -1,0 +1,46 @@
+name: Terraform Apply
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  terraform-apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::447924746567:role/eks_roles
+          aws-region: eu-west-2
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform init
+        working-directory: terraform
+        run: terraform init
+
+      - name: Terraform apply
+        working-directory: terraform
+        run: terraform apply -auto-approve
+
+  gitops-bootstrap:
+    needs: terraform-apply
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::447924746567:role/github-action
+          aws-region: eu-west-2
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name eks-cluster --region eu-west-2
+
+      - name: Apply root Application
+        run: kubectl apply -f kubernetes/apps/root.yaml
