@@ -41,16 +41,12 @@ resource "aws_iam_role_policy_attachment" "lb_controller" {
   policy_arn = aws_iam_policy.lb_controller.arn
 }
 
-# GitHub Actions OIDC 
-# stored credentials, to this repos main branch only.
-data "tls_certificate" "github" {
+# GitHub Actions OIDC - the provider is account-wide (identical for every
+# repo; per-repo scoping happens in the role's trust policy below), so it's
+# looked up rather than created to avoid clashing with one that may already
+# exist in this account from something else.
+data "aws_iam_openid_connect_provider" "github" {
   url = "https://token.actions.githubusercontent.com"
-}
-
-resource "aws_iam_openid_connect_provider" "github" {
-  url             = "https://token.actions.githubusercontent.com"
-  client_id_list  = ["sts.amazonaws.com"]
-  thumbprint_list = [data.tls_certificate.github.certificates[0].sha1_fingerprint]
 }
 
 resource "aws_iam_role" "github_actions" {
@@ -61,7 +57,7 @@ resource "aws_iam_role" "github_actions" {
     Statement = [{
       Effect    = "Allow"
       Action    = "sts:AssumeRoleWithWebIdentity"
-      Principal = { Federated = aws_iam_openid_connect_provider.github.arn }
+      Principal = { Federated = data.aws_iam_openid_connect_provider.github.arn }
       Condition = {
         StringEquals = {
           "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"

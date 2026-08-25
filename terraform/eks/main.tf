@@ -104,3 +104,24 @@ resource "aws_eks_node_group" "main" {
     Name = "eks-node-group"
   }
 }
+
+# Cluster uses pure API authentication mode (no aws-auth ConfigMap), so
+# nobody gets cluster access implicitly - not even whoever ran `terraform
+# apply`. This grants that identity admin access explicitly.
+data "aws_caller_identity" "current" {}
+
+resource "aws_eks_access_entry" "terraform_caller" {
+  cluster_name  = aws_eks_cluster.main.name
+  principal_arn = data.aws_caller_identity.current.arn
+  type          = "STANDARD"
+}
+
+resource "aws_eks_access_policy_association" "terraform_caller_admin" {
+  cluster_name  = aws_eks_cluster.main.name
+  principal_arn = data.aws_caller_identity.current.arn
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+
+  access_scope {
+    type = "cluster"
+  }
+}
