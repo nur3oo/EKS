@@ -29,3 +29,31 @@ docker compose -f docker-compose-dev.yml up
 
 Open `http://localhost:3001` in your browser.
 <img width="1892" height="838" alt="Screenshot 2026-05-09 155917" src="https://github.com/user-attachments/assets/5f81a019-2f31-4298-b6f4-7a897913bb8e" />
+
+## Key features
+## Kubernetes
+
+This project runs on EKS with everything managed through GitOps. Nothing gets deployed with kubectl apply, every change goes through Git and ArgoCD picks it up from there.
+
+- **ArgoCD** runs an app of apps pattern, one root Application watches this repo and creates every other Application automatically, including managing its own Helm release.
+- **AWS Load Balancer Controller** provisions ALBs from Ingress resources, using IRSA for permissions instead of static credentials.
+- **Prometheus and Grafana** give visibility into node and pod level metrics with dashboards.
+- **Ingress Controller** routes external traffic in and works with the LB controller so each app gets its own ALB listener.
+- **Helm** packages and templates every workload in the cluster, including ArgoCD itself, with values managed in Git.
+
+## Terraform
+
+Terraform handles the infrastructure layer, everything that has to exist before GitOps can take over.
+
+- **EKS Cluster** and node groups, fully defined as code and reproducible from scratch.
+- **VPC** with subnets, routing, and a NAT Gateway for outbound access. I didn't use VPC endpoints here, they're more secure and often cheaper on data transfer, but the number needed to cover ECR, S3, STS, CloudWatch, ArgoCD, Prometheus, and Grafana across multiple AZs added up in both setup time and fixed hourly cost, so a single NAT Gateway was the simpler trade-off for this project.
+- **IAM Roles** for IRSA (in cluster workloads) and GitHub OIDC (CI/CD), both scoped with least privilege trust policies.
+
+Terraform's job stops at bootstrapping the cluster and installing ArgoCD. From there, everything else lives in Git.
+## Docker
+
+* Containerised the application for consistency and portability across environments.
+* Set up Docker layer caching to cut down build times.
+* Used multi-stage builds to keep image size down for faster deployments.
+* Ran the container as a non-root user to reduce security risk.
+* Used immutable image tags so deployments stay reproducible.
