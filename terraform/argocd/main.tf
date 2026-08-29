@@ -9,9 +9,11 @@ resource "helm_release" "argocd" {
 }
 
 # Lets the GitHub Actions role (see terraform/iam) apply the app-of-apps root
-# Application - and nothing else. It authenticates via the EKS access entry
-# mapping it to the gha-gitops-bootstrap group; this is what that group can
-# actually do once authenticated.
+# Application, and delete Applications during teardown (destroy.yaml deletes
+# them explicitly first so the lb controller can clean up its albs before the
+# vpc/security groups go). Authenticates via the EKS access entry mapping it
+# to the gha-gitops-bootstrap group; this is what that group can actually do
+# once authenticated.
 resource "kubernetes_role" "gha_gitops_bootstrap" {
   metadata {
     name      = "gha-gitops-bootstrap"
@@ -21,7 +23,7 @@ resource "kubernetes_role" "gha_gitops_bootstrap" {
   rule {
     api_groups = ["argoproj.io"]
     resources  = ["applications"]
-    verbs      = ["get", "list", "create", "patch", "update"]
+    verbs      = ["get", "list", "create", "patch", "update", "delete"]
   }
 
   depends_on = [helm_release.argocd]
