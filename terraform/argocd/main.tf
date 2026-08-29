@@ -23,7 +23,7 @@ resource "kubernetes_role" "gha_gitops_bootstrap" {
   rule {
     api_groups = ["argoproj.io"]
     resources  = ["applications"]
-    verbs      = ["get", "list", "create", "patch", "update", "delete"]
+    verbs      = ["get", "list", "watch", "create", "patch", "update", "delete"]
   }
 
   depends_on = [helm_release.argocd]
