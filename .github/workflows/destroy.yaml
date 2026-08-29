@@ -38,10 +38,16 @@ jobs:
           kubectl delete application uptime-kuma monitoring -n argocd \
             --cascade=foreground --ignore-not-found --timeout=180s
 
+      # orphan, not foreground: root's own resources include the argocd
+      # Application (app-of-apps, self-managing), so a foreground cascade
+      # deadlocks - ArgoCD can't delete its own running controller out from
+      # under itself. Orphan just removes root's finalizer/object; the
+      # cluster is being destroyed next anyway so its children don't need
+      # cascading cleanup here.
       - name: Delete root app
         run: |
           kubectl delete application root -n argocd \
-            --cascade=foreground --ignore-not-found --timeout=180s
+            --cascade=orphan --ignore-not-found --timeout=60s
 
   terraform-destroy:
     needs: gitops-teardown
