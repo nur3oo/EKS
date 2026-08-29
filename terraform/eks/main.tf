@@ -109,15 +109,22 @@ resource "aws_eks_node_group" "main" {
 # grants that identity admin access explicitly.
 data "aws_caller_identity" "current" {}
 
+# aws_caller_identity returns the STS assumed-role session ARN when run
+# under a role (e.g. GitHub Actions OIDC), but EKS access entries need the
+# underlying IAM role ARN - this resolves the session ARN back to it.
+data "aws_iam_session_context" "current" {
+  arn = data.aws_caller_identity.current.arn
+}
+
 resource "aws_eks_access_entry" "terraform_caller" {
   cluster_name  = aws_eks_cluster.main.name
-  principal_arn = data.aws_caller_identity.current.arn
+  principal_arn = data.aws_iam_session_context.current.issuer_arn
   type          = "STANDARD"
 }
 
 resource "aws_eks_access_policy_association" "terraform_caller_admin" {
   cluster_name  = aws_eks_cluster.main.name
-  principal_arn = data.aws_caller_identity.current.arn
+  principal_arn = data.aws_iam_session_context.current.issuer_arn
   policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
 
   access_scope {
