@@ -7,17 +7,13 @@ on:
         description: "Type yes to destroy everything"
         required: true
 
-jobs:
-  apply:
-    if: ${{ github.event.inputs.confirm == 'yes' }}
-    runs-on: ubuntu-latest
-
 permissions:
   id-token: write
   contents: read
 
 jobs:
   gitops-teardown:
+    if: ${{ github.event.inputs.confirm == 'yes' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -49,6 +45,7 @@ jobs:
 
   terraform-destroy:
     needs: gitops-teardown
+    if: ${{ github.event.inputs.confirm == 'yes' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
