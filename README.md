@@ -123,3 +123,10 @@ EKS/
 **Why:** Keeps two different change cadences separate. Infra changes are rare and higher-risk (`terraform apply`); workload changes are frequent and lower-risk (Git commit, auto-synced). Mixing them means every app update carries the blast radius of a Terraform run.
 
 **Trade-off:** Requires discipline to not "just add it to Terraform" when something's quicker to bootstrap that way. Debugging also means knowing which layer to look in, Terraform state or ArgoCD sync status, when something's broken.
+
+## Deployed application with domain
+
+<img width="1912" height="1020" alt="Screenshot 2026-08-29 141653" src="https://github.com/user-attachments/assets/04f2f8c8-1eab-48a6-8f7e-d1e303c9113b" />
+
+## Grafana: Deployed through ArgoCD to visualise cluster and pod metrics with real-time dashboards.
+<img width="1902" height="1017" alt="Screenshot 2026-08-29 142432" src="https://github.com/user-attachments/assets/d3914003-4c64-40df-8659-7fc3e06a343e" />
