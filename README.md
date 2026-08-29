@@ -57,3 +57,69 @@ Terraform's job stops at bootstrapping the cluster and installing ArgoCD. From t
 * Used multi-stage builds to keep image size down for faster deployments.
 * Ran the container as a non-root user to reduce security risk.
 * Used immutable image tags so deployments stay reproducible.
+
+## Repo Structure
+```
+EKS/
+├── .github/
+│   └── workflows/
+│       ├── destroy.yaml
+│       ├── push-image.yaml
+│       ├── terraform-apply.yaml
+│       └── terraform-plan.yaml
+│
+├── terraform/                      # Infra & bootstrap (Terraform-owned)
+│   ├── vpc/                        # VPC, subnets, NAT Gateway
+│   ├── eks/                        # EKS cluster & node groups
+│   ├── iam/                        # IAM roles/policies (LB controller policy)
+│   ├── sg/                         # Security groups
+│   ├── certs/                      # ACM/cert resources
+│   ├── argocd/                     # ArgoCD one-time bootstrap install
+│   ├── bootstrap/                  # Initial cluster bootstrap resources
+│   ├── main.tf
+│   ├── variables.tf
+│   ├── output.tf
+│   ├── provider.tf
+│   └── backend.tf
+│
+├── kubernetes/                     # In cluster workloads (ArgoCD-owned)
+│   ├── apps/                       # ArgoCD Application manifests 
+│   │   ├── root.yaml               # Root (apply this for everything)
+│   │   ├── argocd.yaml
+│   │   ├── lb-controller.yaml
+│   │   ├── monitoring.yaml
+│   │   └── uptime-kuma.yaml
+│   ├── monitoring/                 # kube-prometheus-stack values
+│   │   └── values/
+│   │       └── base.yaml           # Prometheus, Alertmanager, Grafana, exporters
+│   └── uptime-kuma/
+│       ├── deployment.yaml
+│       ├── service.yaml
+│       └── ingress.yaml
+│
+├── uptime-kuma/                    # app source (custom Docker build)
+│
+└── README.md
+```
+
+## Architectural Trade-offs
+
+### NAT Gateway vs VPC Endpoints
+
+**Started with:** VPC Endpoints only (S3, ECR, STS) — no NAT Gateway, to avoid its hourly and data processing costs.
+
+**Problem:** Endpoints only cover AWS service traffic. ArgoCD-managed workloads pulling public Helm charts and images not mirrored to ECR had no internet egress path.
+
+**Switched to:** NAT Gateway for general internet egress, kept VPC Endpoints for AWS service traffic (S3, ECR, STS) to keep that traffic cheap and off the public internet.
+
+**Trade-off:** Accepted NAT Gateway's cost for the flexibility of not needing an ECR mirror or custom endpoint for every new dependency. Right call for iteration speed on a portfolio project; at production scale I'd revisit actual NAT data costs and consider tightening egress further.
+
+---
+
+### Terraform vs ArgoCD Ownership Split
+
+**Boundary:** Terraform owns infrastructure and bootstrap only — VPC, EKS cluster, IAM, security groups, and a one-time ArgoCD install. ArgoCD owns everything that runs inside the cluster from that point on.
+
+**Why:** Keeps two different change cadences separate. Infra changes are rare and higher-risk (`terraform apply`); workload changes are frequent and lower-risk (Git commit, auto-synced). Mixing them means every app update carries the blast radius of a Terraform run.
+
+**Trade-off:** Requires discipline to not "just add it to Terraform" when something's quicker to bootstrap that way. Debugging also means knowing which layer to look in, Terraform state or ArgoCD sync status, when something's broken.
