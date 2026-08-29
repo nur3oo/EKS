@@ -1,0 +1,45 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: external-dns
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  source:
+    repoURL: https://kubernetes-sigs.github.io/external-dns
+    chart: external-dns
+    targetRevision: "1.15.0"
+    helm:
+      releaseName: external-dns
+      values: |
+        provider:
+          name: aws
+        policy: sync
+        registry: txt
+        txtOwnerId: eks-cluster
+        domainFilters:
+          - nurtrade.net
+        sources:
+          - ingress
+        serviceAccount:
+          create: true
+          name: external-dns
+          annotations:
+            # Fixed IAM role name (terraform/iam/main.tf) + this AWS account's
+            # id - both are stable across every destroy/recreate cycle, so
+            # this doesn't need to be templated from a terraform output.
+            eks.amazonaws.com/role-arn: arn:aws:iam::447924746567:role/external-dns-irsa
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

@@ -30,3 +30,8 @@ variable "cluster_name" {
   description = "EKS cluster name, for the github_actions access entry"
   type        = string
 }
+
+variable "domain_name" {
+  description = "Root domain (Route53 hosted zone) external-dns is allowed to manage records in"
+  type        = string
+}
