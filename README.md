@@ -55,37 +55,37 @@ EKS/
 │       ├── terraform-apply.yaml
 │       └── terraform-plan.yaml
 │
-├── terraform/                      # Infra & bootstrap (Terraform-owned)
-│   ├── vpc/                        # VPC, subnets, NAT Gateway
-│   ├── eks/                        # EKS cluster & node groups
-│   ├── iam/                        # IAM roles/policies (LB controller policy)
-│   ├── sg/                         # Security groups
-│   ├── certs/                      # ACM/cert resources
-│   ├── argocd/                     # ArgoCD one-time bootstrap install
-│   ├── bootstrap/                  # Initial cluster bootstrap resources
-│   ├── main.tf
-│   ├── variables.tf
-│   ├── output.tf
-│   ├── provider.tf
-│   └── backend.tf
+├── terraform/
+│   ├── main.tf, variables.tf, output.tf, provider.tf, backend.tf
+│   ├── vpc/
+│   ├── eks/
+│   ├── iam/
+│   ├── sg/
+│   ├── certs/
+│   ├── argocd/
+│   └── bootstrap/
 │
-├── kubernetes/                     # In cluster workloads (ArgoCD-owned)
-│   ├── apps/                       # ArgoCD Application manifests 
-│   │   ├── root.yaml               # Root (apply this for everything)
+├── kubernetes/
+│   ├── apps/                      # ArgoCD app manifests
+│   │   ├── root.yaml
 │   │   ├── argocd.yaml
+│   │   ├── cert-manager.yaml
+│   │   ├── external-dns.yaml
+│   │   ├── ingress-nginx.yaml
 │   │   ├── lb-controller.yaml
 │   │   ├── monitoring.yaml
 │   │   └── uptime-kuma.yaml
-│   ├── monitoring/                 # kube-prometheus-stack values
+│   ├── cert-manager/
+│   │   └── cluster-issuer.yaml
+│   ├── monitoring/
 │   │   └── values/
-│   │       └── base.yaml           # Prometheus, Alertmanager, Grafana, exporters
+│   │       └── base.yaml          # kube-prometheus-stack Helm values
 │   └── uptime-kuma/
 │       ├── deployment.yaml
-│       ├── service.yaml
-│       └── ingress.yaml
+│       ├── ingress.yaml
+│       └── service.yaml
 │
-├── uptime-kuma/                    # app source (custom Docker build)
-│
+├── uptime-kuma/                    # vendored app source, custom Docker build
 └── README.md
 ```
 
