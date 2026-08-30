@@ -13,23 +13,10 @@
 
 Uptime Kuma is an open source self-hosted monitoring tool. Monitor websites, APIs, and services and get alerted when something goes down. Lightweight, clean UI, and easy to self-host in a container.
 
+## Architecture diagram
+<img width="573" height="727" alt="Screenshot 2026-08-30 224518" src="https://github.com/user-attachments/assets/5ddb7b96-2815-4f46-81f8-4c939cf275c0" />
+
 ---
-
-## Running Locally
-
-Uptime Kuma was first validated locally using Docker Compose before being deployed to EKS.
-
-The v1 image is used over v2 because v2 ships with an embedded MariaDB that requires Unix socket support, which does not work on WSL2 or Docker Desktop. v1 runs on SQLite and works out of the box.
-
-```bash
-cd uptime-kuma
-cd docker
-docker compose -f docker-compose-dev.yml up
-```
-
-Open `http://localhost:3001` in your browser.
-<img width="1892" height="838" alt="Screenshot 2026-05-09 155917" src="https://github.com/user-attachments/assets/5f81a019-2f31-4298-b6f4-7a897913bb8e" />
-
 ## Key features
 ## Kubernetes
 
@@ -123,6 +110,23 @@ EKS/
 **Why:** Keeps two different change cadences separate. Infra changes are rare and higher-risk (`terraform apply`); workload changes are frequent and lower-risk (Git commit, auto-synced). Mixing them means every app update carries the blast radius of a Terraform run.
 
 **Trade-off:** Requires discipline to not "just add it to Terraform" when something's quicker to bootstrap that way. Debugging also means knowing which layer to look in, Terraform state or ArgoCD sync status, when something's broken.
+
+## Running Locally
+
+Uptime Kuma was first validated locally using Docker Compose before being deployed to EKS.
+
+The v1 image is used over v2 because v2 ships with an embedded MariaDB that requires Unix socket support, which does not work on WSL2 or Docker Desktop. v1 runs on SQLite and works out of the box.
+
+```bash
+cd uptime-kuma
+cd docker
+docker compose -f docker-compose-dev.yml up
+```
+
+Open `http://localhost:3001` in your browser.
+<img width="1892" height="838" alt="Screenshot 2026-05-09 155917" src="https://github.com/user-attachments/assets/5f81a019-2f31-4298-b6f4-7a897913bb8e" />
+
+
 
 ## Deployed application with domain
 
