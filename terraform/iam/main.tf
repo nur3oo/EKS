@@ -88,6 +88,54 @@ resource "aws_iam_role_policy_attachment" "external_dns" {
   policy_arn = aws_iam_policy.external_dns.arn
 }
 
+resource "aws_iam_role" "cert_manager" {
+  name = "cert-manager-irsa"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Action    = "sts:AssumeRoleWithWebIdentity"
+      Principal = { Federated = aws_iam_openid_connect_provider.eks.arn }
+      Condition = {
+        StringEquals = {
+          "${local.oidc_provider_host}:sub" = "system:serviceaccount:cert-manager:cert-manager"
+          "${local.oidc_provider_host}:aud" = "sts.amazonaws.com"
+        }
+      }
+    }]
+  })
+}
+
+resource "aws_iam_policy" "cert_manager" {
+  name = "CertManagerRoute53IAMPolicy"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = "route53:GetChange"
+        Resource = "arn:aws:route53:::change/*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["route53:ChangeResourceRecordSets", "route53:ListResourceRecordSets"]
+        Resource = "arn:aws:route53:::hostedzone/${data.aws_route53_zone.root.zone_id}"
+      },
+      {
+        Effect   = "Allow"
+        Action   = "route53:ListHostedZonesByName"
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "cert_manager" {
+  role       = aws_iam_role.cert_manager.name
+  policy_arn = aws_iam_policy.cert_manager.arn
+}
+
 # GitHub Actions OIDC - the provider is account-wide (identical for every
 # repo; per-repo scoping happens in the role's trust policy below), so it's
 # looked up rather than created to avoid clashing with one that may already

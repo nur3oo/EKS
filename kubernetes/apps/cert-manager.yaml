@@ -1,0 +1,43 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cert-manager
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  # helm chart + clusterissuer manifest, synced as one app
+  sources:
+    - repoURL: https://charts.jetstack.io
+      chart: cert-manager
+      targetRevision: "v1.21.1"
+      helm:
+        releaseName: cert-manager
+        values: |
+          installCRDs: true
+          serviceAccount:
+            create: true
+            name: cert-manager
+            annotations:
+              # fixed role name + account id, stable across rebuilds
+              eks.amazonaws.com/role-arn: arn:aws:iam::447924746567:role/cert-manager-irsa
+
+    - repoURL: https://github.com/nur3oo/EKS.git
+      targetRevision: HEAD
+      path: kubernetes/cert-manager
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cert-manager
+
+  syncPolicy:
+    automated:
+      prune: true      # remove resources deleted from git
+      selfHeal: true   # revert manual cluster changes
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true   # required for cert-manager CRDs
+      # lets first sync pass before crds exist, selfheal catches up
+      - SkipDryRunOnMissingResource=true
