@@ -53,6 +53,15 @@ Handles the infrastructure layer, everything that needs to exist before GitOps t
 
 Terraform's job stops at bootstrapping the cluster and installing ArgoCD. Everything else lives in Git.
 
+## CI/CD
+
+Every workflow is manually triggered (`workflow_dispatch`) with a confirm input, no auto-apply on push. Auth is via GitHub OIDC, no static AWS credentials.
+
+- **terraform-plan**: runs `terraform plan` to check drift before applying.
+- **terraform-apply**: applies the infra, then applies the ArgoCD root Application, handing off to GitOps.
+- **push-image**: builds and pushes the Uptime Kuma image to ECR, tagged with the commit SHA.
+- **destroy**: deletes ArgoCD-managed apps first so the LB controller can clean up its ALBs, then runs `terraform destroy`. Wrong order leaves orphaned ALBs and stuck subnets.
+
 ## Docker
 - Containerised the app for consistency across environments
 - Docker layer caching to cut build times
@@ -149,3 +158,9 @@ Open `http://localhost:3001` in your browser.
 
 ## Grafana: Deployed through ArgoCD to visualise cluster and pod metrics with real-time dashboards.
 <img width="1902" height="1017" alt="Screenshot 2026-08-29 142432" src="https://github.com/user-attachments/assets/d3914003-4c64-40df-8659-7fc3e06a343e" />
+Cluster view. CPU requests are well above actual usage (24.6% requested vs 4.20% used), giving space but leaving room to right-size. Memory runs the other way, usage sits above requests (37.1% vs 13.1%), worth increasing memory since the memory risks eviction under pressure as the workload increases.
+
+## Future Improvements
+- **Persistent storage for Prometheus**, no `storageSpec` set, so a pod restart wipes all metrics history.
+- **Ingress rate limiting / WAF**, public ingress has no rate limiting or WAF in front of it.
+- **Blue/green or canary rollout for app updates**, currently a plain rolling update, no traffic shifting or automated rollback on failure.
