@@ -8,17 +8,17 @@ metadata:
 spec:
   project: default
 
-  # Multi-source: Helm chart from the community repo + values from this git repo.
+  # Helm chart from the community repo and the values from my git repo.
   sources:
     - repoURL: https://prometheus-community.github.io/helm-charts
       chart: kube-prometheus-stack
-      # Pin the chart version for reproducible deploys.
-      # Check latest: helm repo update && helm search repo prometheus-community/kube-prometheus-stack
+    
+      # Checks latest: helm repo update helm search repo prometheus-community/kube-prometheus-stack
       targetRevision: "72.3.0"
       helm:
         releaseName: monitoring
         valueFiles:
-          # $values resolves to the second source below (this git repo)
+          
           - $values/kubernetes/monitoring/values/base.yaml
 
     - repoURL: https://github.com/nur3oo/EKS.git
