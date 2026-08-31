@@ -8,12 +8,7 @@ resource "helm_release" "argocd" {
   timeout          = 600
 }
 
-# Lets the GitHub Actions role (see terraform/iam) apply the app-of-apps root
-# Application, and delete Applications during teardown (destroy.yaml deletes
-# them explicitly first so the lb controller can clean up its albs before the
-# vpc/security groups go). Authenticates via the EKS access entry mapping it
-# to the gha-gitops-bootstrap group; this is what that group can actually do
-# once authenticated.
+
 resource "kubernetes_role" "gha_gitops_bootstrap" {
   metadata {
     name      = "gha-gitops-bootstrap"
