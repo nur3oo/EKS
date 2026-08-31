@@ -27,9 +27,7 @@ spec:
           create: true
           name: aws-load-balancer-controller
           annotations:
-            # Fixed IAM role name (terraform/iam/main.tf) + this AWS account's
-            # id - both are stable across every destroy/recreate cycle, so
-            # this doesn't need to be templated from a terraform output.
+           
             eks.amazonaws.com/role-arn: arn:aws:iam::447924746567:role/aws-load-balancer-controller-irsa
 
   destination:
