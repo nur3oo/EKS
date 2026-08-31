@@ -107,8 +107,7 @@ resource "aws_route_table_association" "private" {
   route_table_id = aws_route_table.private[count.index].id
 }
 
-# Gateway endpoint, free, no security group needed - keeps S3 traffic (e.g. ALB
-# access logs, Helm chart fetches from S3-backed repos) off the NAT gateways.
+# Gateway endpoint
 resource "aws_vpc_endpoint" "s3" {
   vpc_id            = aws_vpc.main.id
   vpc_endpoint_type = "Gateway"
