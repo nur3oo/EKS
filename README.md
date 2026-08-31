@@ -14,36 +14,51 @@
 Uptime Kuma is an open source self-hosted monitoring tool. Monitor websites, APIs, and services and get alerted when something goes down. Lightweight, clean UI, and easy to self-host in a container.
 
 ## Architecture diagram
-<img width="573" height="727" alt="Screenshot 2026-08-30 224518" src="https://github.com/user-attachments/assets/5ddb7b96-2815-4f46-81f8-4c939cf275c0" />
+<img width="545" height="727" alt="Screenshot 2026-08-31 203611" src="https://github.com/user-attachments/assets/8bb84422-ebe0-4907-a5ad-e3450d6789aa" />
+
 
 ---
+## Tech Stack
+
+**Infrastructure**:
+Terraform · AWS EKS · VPC · IAM (IRSA + OIDC) · NAT Gateway · ACM
+
+**GitOps & Kubernetes**:
+ArgoCD · Helm · AWS Load Balancer Controller · Ingress NGINX · cert-manager · external-dns
+
+**Observability**:
+Prometheus · Grafana · kube-prometheus-stack
+
+**CI/CD**:
+GitHub Actions · GitHub OIDC (no static AWS creds)
+
+**App & Containers**:
+Docker (multi-stage builds, non-root user, layer caching) · Uptime Kuma
 ## Key features
 ## Kubernetes
+Everything runs through GitOps. No kubectl apply, every change goes through Git and ArgoCD syncs it.
 
-This project runs on EKS with everything managed through GitOps. Nothing gets deployed with kubectl apply, every change goes through Git and ArgoCD picks it up from there.
-
-- **ArgoCD** runs an app of apps pattern, one root Application watches this repo and creates every other Application automatically, including managing its own Helm release.
-- **AWS Load Balancer Controller** provisions ALBs from Ingress resources, using IRSA for permissions instead of static credentials.
-- **Prometheus and Grafana** give visibility into node and pod level metrics with dashboards.
-- **Ingress Controller** routes external traffic in and works with the LB controller so each app gets its own ALB listener.
-- **Helm** packages and templates every workload in the cluster, including ArgoCD itself, with values managed in Git.
+- **ArgoCD** - One root Application creates every other Application, including its own Helm release.
+- **AWS Load Balancer Controller** - provisions ALBs from Ingress resources, using IRSA instead of static credentials.
+- **Prometheus and Grafana** - node and pod level metrics with dashboards.
+- **Ingress Controller** - routes external traffic, works with the LB controller so each app gets its own ALB listener.
+- **Helm** - packages every workload including ArgoCD itself, values managed in Git.
 
 ## Terraform
+Handles the infrastructure layer, everything that needs to exist before GitOps takes over.
 
-Terraform handles the infrastructure layer, everything that has to exist before GitOps can take over.
+- **EKS Cluster** and node groups, fully defined as code.
+- **VPC** with subnets, routing, and a NAT Gateway for outbound access. Skipped VPC endpoints, covering ECR, S3, STS, CloudWatch, ArgoCD, Prometheus and Grafana across multiple AZs added up in setup time and fixed cost, NAT Gateway was the simpler trade-off here.
+- **IAM Roles** for IRSA and GitHub OIDC, both least privilege.
 
-- **EKS Cluster** and node groups, fully defined as code and reproducible from scratch.
-- **VPC** with subnets, routing, and a NAT Gateway for outbound access. I didn't use VPC endpoints here, they're more secure and often cheaper on data transfer, but the number needed to cover ECR, S3, STS, CloudWatch, ArgoCD, Prometheus, and Grafana across multiple AZs added up in both setup time and fixed hourly cost, so a single NAT Gateway was the simpler trade-off for this project.
-- **IAM Roles** for IRSA (in cluster workloads) and GitHub OIDC (CI/CD), both scoped with least privilege trust policies.
+Terraform's job stops at bootstrapping the cluster and installing ArgoCD. Everything else lives in Git.
 
-Terraform's job stops at bootstrapping the cluster and installing ArgoCD. From there, everything else lives in Git.
 ## Docker
-
-* Containerised the application for consistency and portability across environments.
-* Set up Docker layer caching to cut down build times.
-* Used multi-stage builds to keep image size down for faster deployments.
-* Ran the container as a non-root user to reduce security risk.
-* Used immutable image tags so deployments stay reproducible.
+- Containerised the app for consistency across environments
+- Docker layer caching to cut build times
+- Multi-stage builds to keep image size down
+- Non-root user to reduce security risk
+- Immutable image tags for reproducible deployments
 
 ## Repo Structure
 ```
