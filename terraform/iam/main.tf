@@ -136,10 +136,7 @@ resource "aws_iam_role_policy_attachment" "cert_manager" {
   policy_arn = aws_iam_policy.cert_manager.arn
 }
 
-# GitHub Actions OIDC - the provider is account-wide (identical for every
-# repo; per-repo scoping happens in the role's trust policy below), so it's
-# looked up rather than created to avoid clashing with one that may already
-# exist in this account from something else.
+
 data "aws_iam_openid_connect_provider" "github" {
   url = "https://token.actions.githubusercontent.com"
 }
@@ -184,9 +181,8 @@ resource "aws_iam_role_policy_attachment" "github_actions_eks_describe" {
   policy_arn = aws_iam_policy.github_actions_eks_describe.arn
 }
 
-# Lets the github_actions role authenticate to the cluster's Kubernetes API.
-# What it's actually allowed to do once authenticated is controlled by the
-# gha-gitops-bootstrap Role/RoleBinding in the argocd module, not here.
+# lets my github_actions role authenticate the cluster's Kubernetes API.
+
 resource "aws_eks_access_entry" "github_actions" {
   cluster_name      = var.cluster_name
   principal_arn     = aws_iam_role.github_actions.arn
