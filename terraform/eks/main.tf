@@ -128,13 +128,11 @@ resource "aws_eks_node_group" "main" {
   }
 }
 
-# cluster uses apii authentication mode (no aws-auth ConfigMap), so
-# grants that identity admin access explicitly.
+# cluster uses apii authentication mode
+
 data "aws_caller_identity" "current" {}
 
-# aws_caller_identity returns the STS assumed-role session ARN when run
-# under a role (e.g. GitHub Actions OIDC), but EKS access entries need the
-# underlying IAM role ARN - this resolves the session ARN back to it.
+# aws_caller_identity returns the STS assumed-role session ARn
 data "aws_iam_session_context" "current" {
   arn = data.aws_caller_identity.current.arn
 }
