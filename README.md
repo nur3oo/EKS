@@ -117,7 +117,7 @@ EKS/
 
 ### NAT Gateway vs VPC Endpoints
 
-**Started with:** VPC Endpoints only (S3, ECR, STS) — no NAT Gateway, to avoid its hourly and data processing costs.
+**Started with:** VPC Endpoints only (S3, ECR, STS) no NAT Gateway, to avoid its hourly and data processing costs.
 
 **Problem:** Endpoints only cover AWS service traffic. ArgoCD-managed workloads pulling public Helm charts and images not mirrored to ECR had no internet egress path.
 
