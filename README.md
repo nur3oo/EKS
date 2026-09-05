@@ -129,7 +129,7 @@ EKS/
 
 ### Terraform vs ArgoCD Ownership Split
 
-**Boundary:** Terraform owns infrastructure and bootstrap only — VPC, EKS cluster, IAM, security groups, and a one-time ArgoCD install. ArgoCD owns everything that runs inside the cluster from that point on.
+**Boundary:** Terraform owns infrastructure and bootstrap only VPC, EKS cluster, IAM, security groups, and a one-time ArgoCD install. ArgoCD owns everything that runs inside the cluster from that point on.
 
 **Why:** Keeps two different change cadences separate. Infra changes are rare and higher-risk (`terraform apply`); workload changes are frequent and lower-risk (Git commit, auto-synced). Mixing them means every app update carries the blast radius of a Terraform run.
 
