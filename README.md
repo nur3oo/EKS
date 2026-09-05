@@ -121,7 +121,7 @@ EKS/
 
 **Problem:** Endpoints only cover AWS service traffic. ArgoCD-managed workloads pulling public Helm charts and images not mirrored to ECR had no internet egress path.
 
-**Switched to:** NAT Gateway for general internet egress, kept VPC Endpoints for AWS service traffic (S3, ECR, STS) to keep that traffic cheap and off the public internet.
+**Switched to:** NAT Gateway for general internet egress.
 
 **Trade-off:** Accepted NAT Gateway's cost for the flexibility of not needing an ECR mirror or custom endpoint for every new dependency. Right call for iteration speed on a portfolio project; at production scale I'd revisit actual NAT data costs and consider tightening egress further.
 
