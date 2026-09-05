@@ -135,6 +135,14 @@ EKS/
 
 **Trade-off:** Requires discipline to not "just add it to Terraform" when something's quicker to bootstrap that way. Debugging also means knowing which layer to look in, Terraform state or ArgoCD sync status, when something's broken.
 
+### ArgoCD Self-Management
+
+**Setup:** The root Application also manages ArgoCD's own Helm release, so ArgoCD upgrades itself through the same GitOps loop as every other workload.
+
+**Risk:** If a bad ArgoCD version or Helm values change gets synced, the component responsible for detecting and fixing drift could itself be the broken, GitOps can't self-heal from the POV that the healer is unhealthy.
+
+**Mitigation:** Recovery falls outside GitOps in this case: a direct `helm rollback argocd` or manual `kubectl` intervention against the cluster, bypassing Git temporarily until ArgoCD is healthy again and can resume managing itself.
+
 ## Running Locally
 
 Uptime Kuma was first validated locally using Docker Compose before being deployed to EKS.
