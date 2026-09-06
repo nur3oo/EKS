@@ -5,6 +5,7 @@ metadata:
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
+      # Ensures full cleanup of everything this app created before it's deleted
 spec:
   project: default
 
