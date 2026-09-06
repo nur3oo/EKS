@@ -27,23 +27,14 @@ jobs:
         run: aws eks update-kubeconfig --name eks-cluster --region eu-west-2
 
       # delete the apps with ingresses first, and wait for them to actually
-      # go, so the lb controller (still running at this point) has a chance
-      # to delete the albs it created. terraform doesn't know those albs
-      # exist it never created them so if they're not gone before the
-      # vpc/security groups get destroyed below, they're orphaned: stuck
-      # references blocking subnet/sg deletion, or a leftover alb nobody's
-      # managing anymore.
+      # go, so the lb controller  has a chance
+      # to delete the albs it created
       - name: Delete apps with ingresses
         run: |
           kubectl delete application uptime-kuma monitoring -n argocd \
             --cascade=foreground --ignore-not-found --timeout=180s
 
-      # orphan, not foreground: root's own resources include the argocd
-      # Application (app-of-apps, self-managing), so a foreground cascade
-      # deadlocks - ArgoCD can't delete its own running controller out from
-      # under itself. Orphan just removes root's finalizer/object; the
-      # cluster is being destroyed next anyway so its children don't need
-      # cascading cleanup here.
+      
       - name: Delete root app
         run: |
           kubectl delete application root -n argocd \
