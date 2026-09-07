@@ -41,7 +41,7 @@ Everything runs through GitOps. No kubectl apply, every change goes through Git 
 - **ArgoCD** - One root Application creates every other Application, including its own Helm release.
 - **AWS Load Balancer Controller** - provisions ALBs from Ingress resources, using IRSA instead of static credentials.
 - **Prometheus and Grafana** - node and pod level metrics with dashboards.
-- **Ingress Controller** - routes external traffic, works with the LB controller so each app gets its own ALB listener.
+- **Ingress Controller** - routes external traffic, works with the LB controller.
 - **Helm** - packages every workload including ArgoCD itself, values managed in Git.
 
 ## Terraform
